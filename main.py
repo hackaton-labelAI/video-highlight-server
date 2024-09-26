@@ -1,50 +1,85 @@
-import uvicorn
-from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse
-import shutil
+import logging
 import os
-
+import time
+from time import sleep
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+import uvicorn
+from fastapi import FastAPI
+from moviepy.video.io.VideoFileClip import VideoFileClip
 from starlette.middleware.cors import CORSMiddleware
+from starlette.websockets import WebSocket, WebSocketDisconnect
+
+from endpoints.upload_file import router as UploadFile
+from endpoints.upload_file import video_sessions
+from services.transcibe import transcribe_by_chunk_id
 
 app = FastAPI()
 
+app.include_router(UploadFile)
+
+logging.basicConfig(
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+    datefmt="%Y-%m-%d %H:%M")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Разрешить запросы от любых источников
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Разрешить все методы
-    allow_headers=["*"],  # Разрешить все заголовки
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-UPLOAD_DIR = "uploaded_videos"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
-@app.post("/upload")
-async def upload_video(file: UploadFile = File(...)):
+@app.websocket("/ws/video-processing/{session_id}")
+async def video_processing(websocket: WebSocket, session_id: str):
+    await websocket.accept()
     try:
-        file_path = os.path.join(UPLOAD_DIR, file.filename)
 
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        return JSONResponse(content={"message": "Файл успешно загружен", "filename": file.filename})
-
-    except Exception as e:
-        return JSONResponse(content={"message": f"Ошибка загрузки файла: {str(e)}"}, status_code=500)
+        if session_id not in video_sessions:
+            await websocket.send_text("Ошибка: Видео для данной сессии не найдено")
+            await websocket.close()
+            return
 
 
-@app.get("/process_video/{filename}")
-async def process_video(filename: str):
-    file_path = os.path.join(UPLOAD_DIR, filename)
+        video: VideoFileClip = video_sessions[session_id]
+        duration = video.duration
+        count_chunks = 10
+        results = []
+        logging.info(f"Начата обработка: количество чанков {count_chunks}")
+        start_time = time.time()
 
-    if not os.path.exists(file_path):
-        return JSONResponse(content={"message": "Файл не найден"}, status_code=404)
+        async def transcribe_video_chunk(video, chunk_id, semaphore):
+            async with semaphore:
+                results = await transcribe_by_chunk_id(video, chunk_id)
+                logging.info(results)
+                return
 
-    return JSONResponse(content={"message": f"Видео обработано: {filename}"})
+        semaphore = asyncio.Semaphore(5)
+
+        tasks = [
+            transcribe_video_chunk(video, chunk_id, semaphore)
+            for chunk_id in range(1, count_chunks + 1)
+        ]
+
+        results = await asyncio.gather(*tasks)
+
+        end_time = time.time() - start_time
+        logging.info(f"Обработано {count_chunks} за {end_time}")
+
+    except WebSocketDisconnect:
+        logging.info(f"WebSocket для сессии {session_id} закрыт")
+    finally:
+        if session_id in video_sessions:
+            video: VideoFileClip = video_sessions[session_id]
+            os.remove(video.filename)
+
+        video_sessions.pop(session_id, None)
+
 
 if __name__ == "__main__":
-    print("hi")
     config = uvicorn.Config("main:app", host="0.0.0.0", log_level="debug")
     server = uvicorn.Server(config)
     server.run()
