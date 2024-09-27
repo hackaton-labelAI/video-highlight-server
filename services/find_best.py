@@ -1,3 +1,5 @@
+import json
+import logging
 import os
 from typing import List
 from openai import AsyncOpenAI
@@ -10,7 +12,19 @@ openai = AsyncOpenAI(
 
 prompt= """
 Найди интригующий момент в тексте до 3 штук, который понятен без контекста длиной от 10 секунд до 180.
-Ответ должен содержать массивы с id, каждый из которых отражает интересный момент последовательности, важно если они в одной массиве они должны быть последовательны.
+Ответ должен содержать массивы с id, не надо просто так класть массив в массив, каждый из которых отражает интересный момент последовательности, важно если они в одной массиве они должны быть последовательны.
+Формат входных данных <id>. <start_sec>-><end_sec> <text>
+Текст:
+%s 
+
+Ответ:
+json
+{sequences:[[<ids>], ...]}
+"""
+
+prompt_for_sort= """
+Найди интригующий момент в тексте до 3 штук, который понятен без контекста длиной от 10 секунд до 180.
+Ответ должен содержать массивы с id, не надо просто так класть массив в массив, каждый из которых отражает интересный момент последовательности, важно если они в одной массиве они должны быть последовательны.
 Формат входных данных <id>. <start_sec>-><end_sec> <text>
 Текст:
 %s 
@@ -21,22 +35,32 @@ json
 """
 
 
-
 def data_to_string(data: List[WhisperResponse])-> str:
     res = ""
     for id, item in enumerate(data):
         res += f"{id}. {item.start_time}->{item.end_time} {item.text}\n"
     return res
 
-async def find_interesting_moment(data: List[WhisperResponse]):
+async def find_interesting_moment(data: List[WhisperResponse])-> List[List[int]]:
     data.sort(key=lambda response: response.start_time)
     gpt_response = await fetch_completion(prompt %data_to_string(data))
-    print(prompt %data_to_string(data))
-    print()
-    print(gpt_response['full_text'])
+    logging.info(prompt %data_to_string(data))
+    logging.info(gpt_response['full_text'])
+    tt = json.loads(gpt_response['full_text'])['sequences']
+    res = []
+    for item in tt:
+        if item:
+            if len(item) < 30:
+                res.append(item[0: 29])
+            else:
+                res.append(item)
+    return res
 
 
-async def fetch_completion(prompt: str):
+async def sort_results(data: List[List[WhisperResponse]]):
+    pass
+
+async def fetch_completion(prompt: str, count = 0):
     try:
         res = await openai.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
