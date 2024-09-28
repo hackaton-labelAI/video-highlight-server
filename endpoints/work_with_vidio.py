@@ -86,7 +86,7 @@ async def load_video_and_json(
         subtitles_font_name: Optional[str] = "Tahoma-Полужирный",
         subtitles_color_name: Optional[str] = "white",
         subtitles_size: Optional[int] = 24,
-        subtitles_stroke: Optional[str] = "purple",
+        subtitles_stroke: Optional[str] = None,
         subtitles_background: Optional[str] = None,
         music_filename: Optional[str] = None,
         music_volume_delta: Optional[int] = -15,

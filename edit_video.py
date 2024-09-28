@@ -113,15 +113,18 @@ def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Пол
 
         video_width, video_height = videosize
 
+        if not stroke_color:
+            stroke_color = color
+
         if not bg_color:
             text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, stroke_color=stroke_color,
-                                 stroke_width=2.5,
+                                 stroke_width=1.0,
                                  size=(video_width * 3 / 4, None), method='caption').set_start(start_time).set_duration(
                 duration)
         else:
             text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, stroke_color=stroke_color,
                                  bg_color=bg_color,
-                                 stroke_width=2.5,
+                                 stroke_width=1.0,
                                  size=(video_width * 3 / 4, None), method='caption').set_start(start_time).set_duration(
                 duration)
 
@@ -141,7 +144,7 @@ def process_video(input_filename, json_filepath,
                   subtitles_font_name="Tahoma-Полужирный",
                   subtitles_color_name="white",
                   subtitles_size=24,
-                  subtitles_stroke="purple",
+                  subtitles_stroke=None,
                   subtitles_background=None,
                   background_filename=None,
                   music_filename=None):
@@ -287,4 +290,5 @@ def process_video(input_filename, json_filepath,
 
 if __name__ == '__main__':
     # process_video(background_filename='background.mp4', music_volume_delta=-15, music_filename='music_lofi.mp3')
-    generate_subtitles('session_info_8f46a547-a786-46d5-9dc9-979dada0a7b0/current_work_video.json')
+    # generate_subtitles('session_info_8f46a547-a786-46d5-9dc9-979dada0a7b0/current_work_video.json')
+    print(TextClip.list('color'))
