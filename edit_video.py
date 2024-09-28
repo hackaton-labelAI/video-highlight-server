@@ -119,7 +119,6 @@ def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Пол
                                  size=(video_width * 3 / 4, None), method='caption').set_start(start_time).set_duration(
                 duration)
         except OSError:
-            print('Ошибка нахуй')
             srt_to_utf8()
             text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, stroke_color='purple',
                                  stroke_width=2.5,
