@@ -3,7 +3,6 @@ import logging
 import os
 from fastapi import APIRouter, HTTPException
 
-
 @router.get("/project/{session_id}/subtitles")
 async def get_subtitles(session_id: str, video_name: str):
     try:
