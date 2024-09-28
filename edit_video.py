@@ -238,4 +238,5 @@ def process_video(input_filename='бз про мусор.mp4', path_to_save='', 
 
 
 if __name__ == '__main__':
-    process_video(background_filename='background.mp4', music_volume_delta=-15, music_filename='music_lofi.mp3')
+    # process_video(background_filename='background.mp4', music_volume_delta=-15, music_filename='music_lofi.mp3')
+    generate_subtitles('session_info_8f46a547-a786-46d5-9dc9-979dada0a7b0/current_work_video.json')
