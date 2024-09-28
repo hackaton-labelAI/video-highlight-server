@@ -14,6 +14,7 @@ from moviepy.video.io.VideoFileClip import VideoFileClip
 from starlette.responses import FileResponse
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
+from edit_video import process_video
 from services.chunks import calculate_chunks
 
 router = APIRouter()
@@ -114,6 +115,7 @@ async def load_video_and_json(session_id: str, file_name: str):
             json.dump(data, json_file, ensure_ascii=False, indent=4)
 
         video_path = os.path.join(session_folder, "current_work_video.mp4")
+        process_video(video_path, path_to_save)
         return FileResponse(video_path, media_type="video/mp4")
 
     except Exception as e:

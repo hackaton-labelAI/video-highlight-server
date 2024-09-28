@@ -1,11 +1,9 @@
+import asyncio
 import json
 import logging
 import os
 import time
 from dataclasses import asdict
-from time import sleep
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from typing import List
 
 import uvicorn
@@ -15,12 +13,12 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from endpoints.upload_file import router as UploadFile
-from endpoints.work_with_vidio import router as WorkWithFile
 from endpoints.upload_file import video_sessions
+from endpoints.work_with_vidio import router as WorkWithFile
 from services.find_best import find_interesting_moment, sort_results, find_two_moments, ResultMoment
 from services.transcibe import transcribe_by_chunk_id
 
-app = FastAPI()
+app = FastAPI(title='Video Highlighter API', docs_url='/docs')
 
 app.include_router(UploadFile)
 app.include_router(WorkWithFile)
@@ -38,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def save_moments(moments: List[ResultMoment], session_id: str):
     session_folder = f"session_info_{session_id}"
     video = VideoFileClip(f"{session_folder}/original_{session_id}.mp4")
@@ -49,6 +48,7 @@ def save_moments(moments: List[ResultMoment], session_id: str):
         video_subclip.write_videofile(f"{session_folder}/chunks/{id}.mp4")
         with open(f"{session_folder}/chunks/{id}.json", 'w', encoding='utf-8') as json_file:
             json.dump(moment.to_dict(), json_file, ensure_ascii=False, indent=4)
+
 
 @app.websocket("/ws/video-processing/{session_id}")
 async def video_processing(websocket: WebSocket, session_id: str):
