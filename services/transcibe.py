@@ -13,8 +13,16 @@ timeout = httpx.Timeout(600.0)
 @dataclass
 class WhisperResponse:
     text: str
-    start_time: int
-    end_time: int
+    start_time: float
+    end_time: float
+
+    def to_dict(self):
+        return {
+            'text': self.text,
+            'start_time': self.start_time,
+            'end_time': self.end_time
+        }
+
 
 def _encode_audio_to_base64(audio_path):
     with open(audio_path, "rb") as audio_file:
@@ -22,9 +30,9 @@ def _encode_audio_to_base64(audio_path):
         base64_encoded = base64.b64encode(audio_data).decode('utf-8')
     return base64_encoded
 
-async def transcribe_by_chunk_id(vidio: VideoFileClip, chunk_id: int)-> WhisperResponse:
-    start_time = chunk_id * 10
-    end_time = min(vidio.duration, start_time+12)
+async def transcribe_by_chunk_id(vidio: VideoFileClip, chunk_id: int, sec_chunk: int = 2)-> WhisperResponse:
+    start_time = chunk_id * sec_chunk
+    end_time = min(vidio.duration, (chunk_id+1) * sec_chunk)
     chunk: VideoFileClip = vidio.subclip(start_time, end_time)
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
         temp_audio_path = temp_audio_file.name
@@ -37,13 +45,14 @@ async def transcribe_by_chunk_id(vidio: VideoFileClip, chunk_id: int)-> WhisperR
 
 async def make_prediction(base64_string: str)-> str:
     api_token = os.environ.get('MLP_TOKEN', '1000097868.108975.YgRqz5fhVIpjGS1scLLlwRqLU0M6wSj5oiWYNfYo')
-    url = 'https://caila.io/api/mlpgate/account/just-ai/model/faster-whisper-tiny/predict'
+    url = 'https://caila.io/api/mlpgate/account/just-ai/model/faster-whisper-large/predict'
     headers = {
         'MLP-API-KEY': api_token,
         'Content-Type': 'application/json',
     }
     body = {
-        "audio_base64": base64_string
+        "audio_base64": base64_string,
+        "language": "ru"
     }
 
     async with httpx.AsyncClient() as client:

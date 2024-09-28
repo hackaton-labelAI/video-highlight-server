@@ -13,6 +13,6 @@ def create_chunks(video: VideoFileClip, chunk_duration: int, overlap: int)-> Lis
         start += chunk_duration - overlap
     return chunks
 
-def calculate_chunks(duration, chunk_size=10):
+def calculate_chunks(duration, chunk_size=1):
     num_chunks = max(1, int(duration // chunk_size))
     return num_chunks
