@@ -9,7 +9,6 @@ import pysrt
 from deepface import DeepFace
 from moviepy.editor import TextClip, CompositeVideoClip
 from pydub import AudioSegment
-import math
 
 
 def convert_seconds_to_time(seconds):
@@ -66,7 +65,7 @@ def srt_to_utf8(filename='subtitles.srt'):
                 content = f.read()
             with open(filename, 'w', encoding='utf-8') as f:
                 f.write(content)
-            print(f"Файл '{filename}' успешно конвертирован в UTF-8 и сохранен как '{output_file}'.")
+            print(f"Файл '{filename}' успешно конвертирован в UTF-8 и сохранен как '{filename}'.")
         except Exception as e:
             print(f"Ошибка при конвертации файла '{filename}': {e}")
     except Exception as e:
@@ -103,7 +102,8 @@ def time_to_seconds(time_obj):
     return time_obj.hours * 3600 + time_obj.minutes * 60 + time_obj.seconds + time_obj.milliseconds / 1000
 
 
-def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Полужирный', color='white', debug=False):
+def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Полужирный', color='white',
+                          stroke_color='purple', subtitles_high=None, bg_color=None, debug=False):
     subtitle_clips = []
 
     for subtitle in subtitles:
@@ -113,20 +113,20 @@ def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Пол
 
         video_width, video_height = videosize
 
-        try:
-            text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, stroke_color='purple',
+        if not bg_color:
+            text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, stroke_color=stroke_color,
                                  stroke_width=2.5,
                                  size=(video_width * 3 / 4, None), method='caption').set_start(start_time).set_duration(
                 duration)
-        except OSError:
-            srt_to_utf8()
-            text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, stroke_color='purple',
+        else:
+            text_clip = TextClip(subtitle.text, fontsize=fontsize, font=font, color=color, stroke_color=stroke_color,
+                                 bg_color=bg_color,
                                  stroke_width=2.5,
                                  size=(video_width * 3 / 4, None), method='caption').set_start(start_time).set_duration(
                 duration)
 
         subtitle_x_position = 'center'
-        subtitle_y_position = video_height * 3 / 5
+        subtitle_y_position = video_height * 3 / 5 if not subtitles_high else subtitles_high
 
         text_position = (subtitle_x_position, subtitle_y_position)
         subtitle_clips.append(text_clip.set_position(text_position))
@@ -134,9 +134,17 @@ def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Пол
     return subtitle_clips
 
 
-def process_video(input_filename, json_filepath, path_to_save='',
-                  music_volume_delta=-20, add_subtitles=True,
-                  background_filename=None, music_filename=None):
+def process_video(input_filename, json_filepath,
+                  music_volume_delta=-20,
+                  add_subtitles=True,
+                  subtitles_highness=None,
+                  subtitles_font_name="Tahoma-Полужирный",
+                  subtitles_color_name="white",
+                  subtitles_size=24,
+                  subtitles_stroke="purple",
+                  subtitles_background=None,
+                  background_filename=None,
+                  music_filename=None):
     # Open the video file
 
     video = cv2.VideoCapture(input_filename)
@@ -214,7 +222,7 @@ def process_video(input_filename, json_filepath, path_to_save='',
     original_video = mpe.VideoFileClip(input_filename)
     audio = original_video.audio
 
-    # добавляем майнкрафт
+    # добавляем фон
     if background_filename:
         width, height = my_clip.size
         background_file = mpe.VideoFileClip(background_filename, target_resolution=(height, width))
@@ -253,7 +261,14 @@ def process_video(input_filename, json_filepath, path_to_save='',
         generate_subtitles(json_filepath)
         srtfilename = 'subtitles.srt'
         subtitles = pysrt.open(srtfilename)
-        subtitle_clips = create_subtitle_clips(subtitles, final.size)
+        subtitle_clips = create_subtitle_clips(subtitles,
+                                               final.size,
+                                               fontsize=subtitles_size,
+                                               font=subtitles_font_name,
+                                               color=subtitles_color_name,
+                                               stroke_color=subtitles_stroke,
+                                               subtitles_high=subtitles_highness,
+                                               bg_color=subtitles_background)
         final_video = CompositeVideoClip([final] + subtitle_clips)
     else:
         final_video = final
