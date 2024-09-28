@@ -15,6 +15,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from endpoints.upload_file import router as UploadFile
+from endpoints.work_with_vidio import router as WorkWithFile
 from endpoints.upload_file import video_sessions
 from services.find_best import find_interesting_moment, sort_results, find_two_moments, ResultMoment
 from services.transcibe import transcribe_by_chunk_id
@@ -22,6 +23,7 @@ from services.transcibe import transcribe_by_chunk_id
 app = FastAPI()
 
 app.include_router(UploadFile)
+app.include_router(WorkWithFile)
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
