@@ -13,7 +13,7 @@ from pydub import AudioSegment
 
 def convert_seconds_to_time(seconds):
     # Получаем целую часть секунд (количество секунд)
-    total_seconds = int(seconds)
+    total_secondspip = int(seconds)
 
     # Вычисляем часы, минуты и секунды
     hours = total_seconds // 3600
@@ -279,7 +279,7 @@ def process_video(input_filename, json_filepath,
     # Удаление файлов
     os.remove('output_video.avi')
     os.remove('output_audio.mp3')
-    os.remove('subtitles.srt')
+    # os.remove('subtitles.srt')
     print('delegted')
     if music_filename:
         os.remove(music_filename)
