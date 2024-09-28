@@ -278,7 +278,7 @@ def process_video(input_filename, json_filepath,
     os.remove('output_audio.mp3')
     os.remove('subtitles.srt')
     print('delegted')
-    if music_volume_delta:
+    if music_filename:
         os.remove(music_filename)
 
     final_video.write_videofile(input_filename, codec='libx264', audio_codec='aac',
