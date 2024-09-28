@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from starlette.responses import FileResponse
 
-from edit_video import process_video
+from edit_video import process_video, generate_subtitles
 
 router = APIRouter()
 
@@ -81,6 +81,7 @@ async def get_videos(session_id: str):
 async def load_video_and_json(
         session_id: str,
         file_name: str,
+        add_subtitles: bool,
         music_filename: Optional[str] = None,
         music_volume_delta: Optional[int] = 0,
         background_filename: Optional[str] = None
@@ -118,10 +119,10 @@ async def load_video_and_json(
         video_path = os.path.join(session_folder, "current_work_video.mp4")
         # ф-ция для создания файла с субтитрами
         generate_subtitles(json_path)
-        process_video(input_filename=video_path,
+        process_video(video_path,
+                      json_path,
                       path_to_save=session_folder,
-                      subtitles_filename='subtitles.srt',
-                      # add_subtitles: булевое значение
+                      add_subtitles=add_subtitles,
                       # subtitles_font_name
                       # subtitles_color_name
                       # subtitles_size
@@ -132,7 +133,6 @@ async def load_video_and_json(
                       background_filename=background_filename,
 
                        )
-        print('все сделяль')
         return FileResponse(video_path, media_type="video/mp4")
 
     except Exception as e:

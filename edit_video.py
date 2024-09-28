@@ -1,5 +1,4 @@
-# Олег, дергай отсюда только process_video
-
+import json
 import math
 import os
 
@@ -10,10 +9,43 @@ import pysrt
 from deepface import DeepFace
 from moviepy.editor import TextClip, CompositeVideoClip
 from pydub import AudioSegment
+import math
+
+
+def convert_seconds_to_time(seconds):
+    # Получаем целую часть секунд (количество секунд)
+    total_seconds = int(seconds)
+
+    # Вычисляем часы, минуты и секунды
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    secs = total_seconds % 60
+
+    # Получаем миллисекунды
+    milliseconds = int((seconds - total_seconds) * 1000)
+
+    # Форматируем результат
+    time_str = f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
+    return time_str
 
 
 def generate_subtitles(json_filepath):
-    pass
+    with open(json_filepath, 'r') as f:
+        data = json.load(f)
+
+    data = data['whisper_response']
+
+    lines = []
+    i = 1
+    shift = data[0]['start_time']
+    for sentence in data:
+        output_data = f'{i}\n{convert_seconds_to_time(sentence["start_time"] - shift)} --> {convert_seconds_to_time(sentence["end_time"] - shift)}\n{sentence["text"]}\n\n'
+        i += 1
+        lines.append(output_data)
+
+    # Удаление содержимого существующего файла
+    with open('subtitles.srt', 'w') as file:
+        file.writelines(lines)
 
 
 def srt_to_utf8(filename='subtitles.srt'):
@@ -103,8 +135,8 @@ def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Пол
     return subtitle_clips
 
 
-def process_video(input_filename='бз про мусор.mp4', path_to_save='', subtitles_filename='subtitles.srt',
-                  music_volume_delta=-20,
+def process_video(input_filename, json_filepath, path_to_save='',
+                  music_volume_delta=-20, add_subtitles=True,
                   background_filename=None, music_filename=None):
     # Open the video file
 
@@ -209,26 +241,28 @@ def process_video(input_filename='бз про мусор.mp4', path_to_save='', 
 
         music = mpe.AudioFileClip(music_filename)
         music = mpe.afx.audio_loop(music, duration=audio.duration)
-        audio = mpe.CompositeAudioClip([audio, music]).write_audiofile("output_audio.mp3", fps=44100)
+        mpe.CompositeAudioClip([audio, music]).write_audiofile("output_audio.mp3", fps=44100)
     else:
         # добавление аудио
         audio.write_audiofile("output_audio.mp3")
 
     audio_background = mpe.AudioFileClip('output_audio.mp3')
-
-    # добавление субтитров
-    srtfilename = subtitles_filename  # ОЛЕЕЕЕЕГ! НА проде этот файл получается при вызывании whisperx на маленьком файле
-    subtitles = pysrt.open(srtfilename)
-    print('added subs')
-
     final = my_clip.set_audio(audio_background)
 
-    subtitle_clips = create_subtitle_clips(subtitles, final.size)
-    final_video = CompositeVideoClip([final] + subtitle_clips)
+    # добавление субтитров
+    if add_subtitles:
+        generate_subtitles(json_filepath)
+        srtfilename = 'subtitles.srt'
+        subtitles = pysrt.open(srtfilename)
+        subtitle_clips = create_subtitle_clips(subtitles, final.size)
+        final_video = CompositeVideoClip([final] + subtitle_clips)
+    else:
+        final_video = final
 
     # Удаление файлов
     os.remove('output_video.avi')
     os.remove('output_audio.mp3')
+    os.remove('subtitles.srt')
     print('delegted')
     if music_volume_delta:
         os.remove(music_filename)
