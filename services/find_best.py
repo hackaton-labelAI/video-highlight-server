@@ -185,7 +185,7 @@ async def sort_results(data: List[List[WhisperResponse]])-> List[ResultMoment]:
     tt = tt[0:20]
     moments =[]
     for item in tt:
-        current_transcribe =  data[item['id']]
+        current_transcribe =  data[int(item['id'])]
         response_content = await fetch_completion(prompt_template % str([text_and_time.text for text_and_time in current_transcribe ]))
         response_json = json.loads(response_content['full_text'])
         moments.append(ResultMoment(whisper_response=data[item['id']], description=item['description'],
