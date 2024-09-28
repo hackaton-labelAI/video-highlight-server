@@ -12,6 +12,10 @@ from moviepy.editor import TextClip, CompositeVideoClip
 from pydub import AudioSegment
 
 
+def generate_subtitles(json_filepath):
+    pass
+
+
 def srt_to_utf8(filename='subtitles.srt'):
     try:
         # Открываем входной файл в кодировке UTF-8 с ignore-ошибками
@@ -215,6 +219,7 @@ def process_video(input_filename='бз про мусор.mp4', path_to_save='', 
     # добавление субтитров
     srtfilename = subtitles_filename  # ОЛЕЕЕЕЕГ! НА проде этот файл получается при вызывании whisperx на маленьком файле
     subtitles = pysrt.open(srtfilename)
+    print('added subs')
 
     final = my_clip.set_audio(audio_background)
 
@@ -224,10 +229,11 @@ def process_video(input_filename='бз про мусор.mp4', path_to_save='', 
     # Удаление файлов
     os.remove('output_video.avi')
     os.remove('output_audio.mp3')
+    print('delegted')
     if music_volume_delta:
         os.remove(music_filename)
 
-    final_video.write_videofile(os.path.join(path_to_save, input_filename), codec='libx264', audio_codec='aac',
+    final_video.write_videofile(input_filename, codec='libx264', audio_codec='aac',
                                 audio=True, threads=6)
 
 
