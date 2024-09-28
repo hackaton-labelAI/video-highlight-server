@@ -1,20 +1,14 @@
 import json
 import logging
-import tempfile
-import uuid
-from dataclasses import dataclass
-from typing import List
-
-from fastapi import File, UploadFile, APIRouter, HTTPException
-from fastapi.responses import JSONResponse
-
 import os
+from typing import List, Optional
 
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from starlette.responses import FileResponse
-from starlette.websockets import WebSocket, WebSocketDisconnect
 
-from services.chunks import calculate_chunks
+from edit_video import process_video
 
 router = APIRouter()
 
@@ -82,8 +76,16 @@ async def get_videos(session_id: str):
         logging.error(f"Ошибка загрузки видео: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка загрузки файлов: {str(e)}")
 
+
 @router.get("/project/{session_id}/open_video/{file_name}")
-async def load_video_and_json(session_id: str, file_name: str):
+async def load_video_and_json(
+        session_id: str,
+        file_name: str,
+        music_filename: Optional[str] = None,
+        music_volume_delta: Optional[int] = 0,
+        background_filename: Optional[str] = None
+
+):
     try:
         if not session_id:
             raise HTTPException(status_code=404, detail="Нет session_id")
@@ -114,11 +116,29 @@ async def load_video_and_json(session_id: str, file_name: str):
             json.dump(data, json_file, ensure_ascii=False, indent=4)
 
         video_path = os.path.join(session_folder, "current_work_video.mp4")
+        # ф-ция для создания файла с субтитрами
+        generate_subtitles(json_path)
+        process_video(input_filename=video_path,
+                      path_to_save=session_folder,
+                      subtitles_filename='subtitles.srt',
+                      # add_subtitles: булевое значение
+                      # subtitles_font_name
+                      # subtitles_color_name
+                      # subtitles_size
+                      # subtitles_stroke
+                      # subtitles_background
+                      music_volume_delta=music_volume_delta,
+                      music_filename=music_filename,
+                      background_filename=background_filename,
+
+                       )
+        print('все сделяль')
         return FileResponse(video_path, media_type="video/mp4")
 
     except Exception as e:
         logging.error(f"Ошибка получения фрейма: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка получения фрейма: {str(e)}")
+
 
 @router.get("/project/{session_id}/current_video")
 async def get_current_work_video(session_id: str):
@@ -133,6 +153,7 @@ async def get_current_work_video(session_id: str):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Ошибка при получении видео: {str(e)}")
+
 
 @router.get("/project/{session_id}/video/{file_name}/frame")
 async def get_video_frame(session_id: str, file_name: str):
@@ -169,6 +190,7 @@ async def get_video_frame(session_id: str, file_name: str):
     except Exception as e:
         logging.error(f"Ошибка получения фрейма: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка получения фрейма: {str(e)}")
+
 
 @router.get("/project/{session_id}/{file_id}")
 async def upload_video(session_id: str, file_id: int):
