@@ -94,7 +94,7 @@ prompt_for_sort= """
 ```json
 {
   "sortedTexts": [
-    {"id": "<id>", "description": "<description>"}
+    {"id": <id>, "description": "<description>"}
   ]
 
 """
