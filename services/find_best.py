@@ -95,7 +95,7 @@ prompt_for_sort= """
   "sortedTexts": [
     {"id": "<id>", "description": "<description>"}
   ]
-
+}
 """
 
 
