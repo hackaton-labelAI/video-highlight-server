@@ -81,3 +81,4 @@ uvicorn==0.31.0
 websockets==13.1
 Werkzeug==3.0.4
 wrapt==1.16.0
+python-multipart
