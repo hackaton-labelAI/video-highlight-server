@@ -101,9 +101,25 @@ async def load_video_and_json(
         # Путь к папке 'chunks'
         chunks_folder = os.path.join(session_folder, "chunks")
 
+        # Путь к папке с фонами
+        background_folder = os.path.join("data", "backgrounds")
+        # Путь к папке с музыкой
+        music_folder = os.path.join("data", "music")
+
+        music_filename = os.path.join(music_folder, music_filename)
+        background_filename = os.path.join(background_folder, background_filename)
+
         # Проверка существования папки 'chunks'
         if not os.path.exists(chunks_folder):
             raise HTTPException(status_code=404, detail="Папка 'chunks' не найдена")
+        if not os.path.exists(chunks_folder):
+            raise HTTPException(status_code=404, detail="Папка 'backgrounds' не найдена")
+        if not os.path.exists(chunks_folder):
+            raise HTTPException(status_code=404, detail="Папка 'music' не найдена")
+        if not os.path.exists(music_filename):
+            raise HTTPException(status_code=404, detail="Указанная песня не существует. Выбирете другую")
+        if not os.path.exists(background_filename):
+            raise HTTPException(status_code=404, detail="Указанный фон не существует. Выбирете другой")
 
         mp4_path = os.path.join(chunks_folder, f"{file_name}.mp4")
 
@@ -132,7 +148,7 @@ async def load_video_and_json(
                       music_filename=music_filename,
                       background_filename=background_filename,
 
-                       )
+                      )
         return FileResponse(video_path, media_type="video/mp4")
 
     except Exception as e:
