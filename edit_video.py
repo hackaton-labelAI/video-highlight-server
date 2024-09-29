@@ -13,7 +13,7 @@ from pydub import AudioSegment
 
 def convert_seconds_to_time(seconds):
     # Получаем целую часть секунд (количество секунд)
-    total_secondspip = int(seconds)
+    total_seconds = int(seconds)
 
     # Вычисляем часы, минуты и секунды
     hours = total_seconds // 3600
@@ -45,6 +45,12 @@ def generate_subtitles(json_filepath):
     # Удаление содержимого существующего файла
     with open('subtitles.srt', 'w') as file:
         file.writelines(lines)
+
+    with open('subtitles.srt', 'r') as f:
+        data = json.load(f)
+        return str(data)
+
+
 
 
 def srt_to_utf8(filename='subtitles.srt'):
@@ -279,7 +285,7 @@ def process_video(input_filename, json_filepath,
     # Удаление файлов
     os.remove('output_video.avi')
     os.remove('output_audio.mp3')
-    # os.remove('subtitles.srt')
+    os.remove('subtitles.srt')
     print('delegted')
     if music_filename:
         os.remove(music_filename)

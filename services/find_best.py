@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import os
@@ -177,19 +178,28 @@ def sort_result_string(data: List[List[WhisperResponse]]):
     return res
 
 async def sort_results(data: List[List[WhisperResponse]])-> List[ResultMoment]:
-    #random.shuffle(data)
-    gpt_response = await fetch_completion(prompt_for_sort %sort_result_string(data))
+    gpt_response = await fetch_completion(prompt_for_sort % sort_result_string(data))
     logging.info(prompt_for_sort % sort_result_string(data))
     logging.info(gpt_response['full_text'])
     tt = json.loads(gpt_response['full_text'])['sortedTexts']
     tt = tt[0:20]
-    moments =[]
-    for item in tt:
-        current_transcribe =  data[int(item['id'])]
-        response_content = await fetch_completion(prompt_template % str([text_and_time.text for text_and_time in current_transcribe ]))
+
+    async def fetch_moment(item):
+        current_transcribe = data[int(item['id'])]
+        response_content = await fetch_completion(
+            prompt_template % str([text_and_time.text for text_and_time in current_transcribe]))
         response_json = json.loads(response_content['full_text'])
-        moments.append(ResultMoment(whisper_response=data[item['id']], description=item['description'],
-                                    sub_text=response_json.get("sub_text", ""), tags=response_json.get("tags", []), title=response_json.get("title", "")))
+        return ResultMoment(
+            whisper_response=data[item['id']],
+            description=item['description'],
+            sub_text=response_json.get("sub_text", ""),
+            tags=response_json.get("tags", []),
+            title=response_json.get("title", "")
+        )
+
+    tasks = [fetch_moment(item) for item in tt]
+    moments = await asyncio.gather(*tasks)
+
     return moments
 
 async def fetch_completion(prompt: str, count = 0):
