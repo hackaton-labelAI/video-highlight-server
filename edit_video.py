@@ -113,6 +113,7 @@ def create_subtitle_clips(subtitles, videosize, fontsize=24, font='Tahoma-Пол
     subtitle_clips = []
 
     for subtitle in subtitles:
+        print(subtitle.text)
         start_time = time_to_seconds(subtitle.start)
         end_time = time_to_seconds(subtitle.end)
         duration = end_time - start_time
@@ -277,6 +278,8 @@ def process_video(input_filename, json_filepath,
             srtfilename = f'users_subtitles.srt'
         else:
             generate_subtitles(json_filepath)
+
+        print(srtfilename)
 
         subtitles = pysrt.open(srtfilename)
         subtitle_clips = create_subtitle_clips(subtitles,
