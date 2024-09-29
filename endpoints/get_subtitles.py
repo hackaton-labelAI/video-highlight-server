@@ -44,8 +44,11 @@ async def get_subtitles(session_id: str, filename: int, input_str):
         if not os.path.exists(session_folder):
             raise HTTPException(status_code=404, detail="Файл не найден")
 
+        lines = input_str.split('\n')
+
         with open(f'users_subtitles.srt', 'w') as file:
-            file.writelines(input_str)
+            print(input_str)
+            file.writelines(line + '\n' for line in lines)
 
     except Exception as e:
         logging.error(f"Ошибка записи субтитров: {e}")
