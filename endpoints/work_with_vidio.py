@@ -94,86 +94,86 @@ async def load_video_and_json(
         background_filename: Optional[str] = None,
 
 ):
-    # try:
-    if not session_id:
-        raise HTTPException(status_code=404, detail="Нет session_id")
+    try:
+        if not session_id:
+            raise HTTPException(status_code=404, detail="Нет session_id")
 
-    # Путь к папке сессии
-    session_folder = f"session_info_{session_id}"
+        # Путь к папке сессии
+        session_folder = f"session_info_{session_id}"
 
-    # Проверка существования папки сессии
-    if not os.path.exists(session_folder):
-        raise HTTPException(status_code=404, detail="Файл не найден")
+        # Проверка существования папки сессии
+        if not os.path.exists(session_folder):
+            raise HTTPException(status_code=404, detail="Файл не найден")
 
-    # Путь к папке 'chunks'
-    chunks_folder = os.path.join(session_folder, "chunks")
+        # Путь к папке 'chunks'
+        chunks_folder = os.path.join(session_folder, "chunks")
 
-    # Путь к папке с фонами
-    background_folder = os.path.join("data", "backgrounds")
-    # Путь к папке с музыкой
-    music_folder = os.path.join("data", "music")
+        # Путь к папке с фонами
+        background_folder = os.path.join("data", "backgrounds")
+        # Путь к папке с музыкой
+        music_folder = os.path.join("data", "music")
 
-    if music_filename:
-        music_filename = os.path.join(music_folder, music_filename)
-        if not os.path.exists(music_filename):
-            raise HTTPException(status_code=404, detail="Указанная песня не существует. Выбирете другую")
+        if music_filename:
+            music_filename = os.path.join(music_folder, music_filename)
+            if not os.path.exists(music_filename):
+                raise HTTPException(status_code=404, detail="Указанная песня не существует. Выбирете другую")
 
-    if background_filename:
-        background_filename = os.path.join(background_folder, background_filename)
-        if not os.path.exists(background_filename):
-            raise HTTPException(status_code=404, detail="Указанный фон не существует. Выбирете другой")
+        if background_filename:
+            background_filename = os.path.join(background_folder, background_filename)
+            if not os.path.exists(background_filename):
+                raise HTTPException(status_code=404, detail="Указанный фон не существует. Выбирете другой")
 
-    # Проверка существования папки 'chunks'
-    if not os.path.exists(chunks_folder):
-        raise HTTPException(status_code=404, detail="Папка 'chunks' не найдена")
-    if not os.path.exists(chunks_folder):
-        raise HTTPException(status_code=404, detail="Папка 'backgrounds' не найдена")
-    if not os.path.exists(chunks_folder):
-        raise HTTPException(status_code=404, detail="Папка 'music' не найдена")
+        # Проверка существования папки 'chunks'
+        if not os.path.exists(chunks_folder):
+            raise HTTPException(status_code=404, detail="Папка 'chunks' не найдена")
+        if not os.path.exists(chunks_folder):
+            raise HTTPException(status_code=404, detail="Папка 'backgrounds' не найдена")
+        if not os.path.exists(chunks_folder):
+            raise HTTPException(status_code=404, detail="Папка 'music' не найдена")
 
 
-    mp4_path = os.path.join(chunks_folder, f"{file_name}.mp4")
+        mp4_path = os.path.join(chunks_folder, f"{file_name}.mp4")
 
-    json_path = os.path.join(chunks_folder, f"{file_name}.json")
-    video = VideoFileClip(mp4_path)
-    video.write_videofile(os.path.join(session_folder, "current_work_video.mp4"))
-    with open(json_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    json_path = os.path.join(session_folder, "current_work_video.json")
-    with open(json_path, "w", encoding='utf-8') as json_file:  # Открываем в текстовом режиме
-        json.dump(data, json_file, ensure_ascii=False, indent=4)
+        json_path = os.path.join(chunks_folder, f"{file_name}.json")
+        video = VideoFileClip(mp4_path)
+        video.write_videofile(os.path.join(session_folder, "current_work_video.mp4"))
+        with open(json_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        json_path = os.path.join(session_folder, "current_work_video.json")
+        with open(json_path, "w", encoding='utf-8') as json_file:  # Открываем в текстовом режиме
+            json.dump(data, json_file, ensure_ascii=False, indent=4)
 
-    video_path = os.path.join(session_folder, "current_work_video.mp4")
+        video_path = os.path.join(session_folder, "current_work_video.mp4")
 
-    global last_opened_video
+        global last_opened_video
 
-    # создаем новые субтитры, старые авторские удаляем, если они есть
-    print(bool(last_opened_video != video_path))
-    if last_opened_video != video_path:
-        generate_subtitles(json_path)
-        if os.path.exists('users_subtitles.srt'):
-            os.remove('users_subtitles.srt')
+        # создаем новые субтитры, старые авторские удаляем, если они есть
+        print(bool(last_opened_video != video_path))
+        if last_opened_video != video_path:
+            generate_subtitles(json_path)
+            if os.path.exists('users_subtitles.srt'):
+                os.remove('users_subtitles.srt')
 
-    process_video(video_path,
-                  json_path,
-                  add_subtitles=add_subtitles,
-                  subtitles_highness=subtitles_highness,
-                  subtitles_font_name=subtitles_font_name,
-                  subtitles_color_name=subtitles_color_name,
-                  subtitles_size=subtitles_size,
-                  subtitles_stroke=subtitles_stroke,
-                  subtitles_background=subtitles_background,
-                  music_volume_delta=music_volume_delta,
-                  music_filename=music_filename,
-                  background_filename=background_filename
-                  )
-    last_opened_video = file_name
+        process_video(video_path,
+                      json_path,
+                      add_subtitles=add_subtitles,
+                      subtitles_highness=subtitles_highness,
+                      subtitles_font_name=subtitles_font_name,
+                      subtitles_color_name=subtitles_color_name,
+                      subtitles_size=subtitles_size,
+                      subtitles_stroke=subtitles_stroke,
+                      subtitles_background=subtitles_background,
+                      music_volume_delta=music_volume_delta,
+                      music_filename=music_filename,
+                      background_filename=background_filename
+                      )
+        last_opened_video = file_name
 
-    return FileResponse(video_path, media_type="video/mp4")
+        return FileResponse(video_path, media_type="video/mp4")
 
-    # except Exception as e:
-    #     logging.error(f"Ошибка получения фрейма: {e}")
-    #     raise HTTPException(status_code=500, detail=f"Ошибка получения фрейма: {str(e)}")
+    except Exception as e:
+        logging.error(f"Ошибка получения фрейма: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка получения фрейма: {str(e)}")
 
 
 @router.get("/project/{session_id}/current_video")
