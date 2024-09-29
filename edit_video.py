@@ -265,13 +265,12 @@ def process_video(input_filename, json_filepath,
 
     audio_background = mpe.AudioFileClip('output_audio.mp3')
     final = my_clip.set_audio(audio_background)
+    generate_subtitles(json_filepath)
 
     # добавление субтитров
     if add_subtitles:
         srtfilename = 'subtitles.srt'
-        if not os.path.exists('users_subtitles.srt'):
-            generate_subtitles(json_filepath)
-        else:
+        if os.path.exists('users_subtitles.srt'):
             srtfilename = 'users_subtitles.srt'
 
         subtitles = pysrt.open(srtfilename)
