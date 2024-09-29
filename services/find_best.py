@@ -206,7 +206,7 @@ async def fetch_completion(prompt: str, count = 0):
     try:
         res = await openai.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="just-ai/openai-proxy/gpt-4o",
+            model="just-ai/just-ai/vllm-llama3.1-8b",
             temperature=0,
             response_format={"type": "json_object"},
             stream=False
