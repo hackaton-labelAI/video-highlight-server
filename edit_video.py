@@ -273,7 +273,7 @@ def process_video(input_filename, json_filepath,
     # добавление субтитров
     if add_subtitles:
         srtfilename = 'subtitles.srt'
-        if os.path.exists(f'users_subtitles.srt'):
+        if os.path.exists('users_subtitles.srt'):
             srtfilename = f'users_subtitles.srt'
         else:
             generate_subtitles(json_filepath)

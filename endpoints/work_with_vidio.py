@@ -150,8 +150,8 @@ async def load_video_and_json(
     # создаем новые субтитры, старые авторские удаляем, если они есть
     if last_opened_video != video_path:
         generate_subtitles(json_path)
-        if os.path.exists('user_subtitles.srt'):
-            os.remove('user_subtitles.srt')
+        if os.path.exists('users_subtitles.srt'):
+            os.remove('users_subtitles.srt')
 
     process_video(video_path,
                   json_path,
