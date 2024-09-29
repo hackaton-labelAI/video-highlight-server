@@ -44,11 +44,19 @@ async def get_subtitles(session_id: str, filename: int, input_str):
         if not os.path.exists(session_folder):
             raise HTTPException(status_code=404, detail="Файл не найден")
 
+        # if input_str[0] == '\"' and input_str[-1] == '\"':
+        #     input_str = input_str[1:-1]
         lines = input_str.split('\n')
 
         with open(f'users_subtitles.srt', 'w') as file:
-            print(input_str)
-            file.writelines(line + '\n' for line in lines)
+            print(lines)
+            if input_str[0] == '\"' and input_str[-1] == '\"':
+                input_str = input_str[1:-1].replace(r'\n', '\n')
+
+            # for line in lines:
+            #     file.write(line)
+            #     file.write('\n')
+            file.write(input_str)
 
     except Exception as e:
         logging.error(f"Ошибка записи субтитров: {e}")
