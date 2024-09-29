@@ -78,7 +78,7 @@ async def video_processing(websocket: WebSocket, session_id: str):
                 await websocket.send_text("1")
                 return whisper_response
 
-        semaphore = asyncio.Semaphore(1)
+        semaphore = asyncio.Semaphore(5)
 
         tasks = [
             transcribe_video_chunk(video, chunk_id, semaphore)
