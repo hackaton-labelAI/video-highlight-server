@@ -29,7 +29,6 @@ def convert_seconds_to_time(seconds):
 
 
 def generate_subtitles(json_filepath):
-    print(json_filepath)
     with open(json_filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
