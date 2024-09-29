@@ -167,7 +167,7 @@ async def load_video_and_json(
                   music_filename=music_filename,
                   background_filename=background_filename
                   )
-    last_opened_video = video_path
+    last_opened_video = file_name
 
     return FileResponse(video_path, media_type="video/mp4")
 
