@@ -44,7 +44,7 @@ async def get_subtitles(session_id: str, filename: int, input_str):
         if not os.path.exists(session_folder):
             raise HTTPException(status_code=404, detail="Файл не найден")
 
-        with open(f'users_subtitles_{filename}.srt', 'w') as file:
+        with open(f'users_subtitles.srt', 'w') as file:
             file.writelines(input_str)
 
     except Exception as e:
