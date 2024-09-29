@@ -268,8 +268,12 @@ def process_video(input_filename, json_filepath,
 
     # добавление субтитров
     if add_subtitles:
-        generate_subtitles(json_filepath)
         srtfilename = 'subtitles.srt'
+        if not os.path.exists('users_subtitles.srt'):
+            generate_subtitles(json_filepath)
+        else:
+            srtfilename = 'users_subtitles.srt'
+
         subtitles = pysrt.open(srtfilename)
         subtitle_clips = create_subtitle_clips(subtitles,
                                                final.size,
@@ -287,7 +291,6 @@ def process_video(input_filename, json_filepath,
     os.remove('output_video.avi')
     os.remove('output_audio.mp3')
     os.remove('subtitles.srt')
-    print('delegted')
     if music_filename:
         os.remove(music_filename)
 

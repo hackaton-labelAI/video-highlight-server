@@ -22,7 +22,12 @@ async def get_subtitles(session_id: str, filename: int):
 
         json_path = os.path.join(chunks_folder, f"{filename}.json")
 
-        return generate_subtitles(json_path)
+        if os.path.exists("users_subtitles.srt"):
+            with open('users_subtitles.srt', 'r') as f:
+                data = f.read()
+            return data
+        else:
+            return generate_subtitles(json_path)
 
     except Exception as e:
         logging.error(f"Ошибка получения субтитров: {e}")
@@ -39,7 +44,7 @@ async def get_subtitles(session_id: str, filename: int, input_str):
         if not os.path.exists(session_folder):
             raise HTTPException(status_code=404, detail="Файл не найден")
 
-        with open('subtitles.srt', 'w') as file:
+        with open('users_subtitles.srt', 'w') as file:
             file.writelines(input_str)
 
     except Exception as e:
