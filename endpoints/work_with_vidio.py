@@ -13,6 +13,7 @@ from edit_video import process_video, generate_subtitles
 router = APIRouter()
 
 video_sessions = {}
+last_opened_video = 0
 
 
 @router.get("/project/{session_id}/videos")
@@ -143,8 +144,15 @@ async def load_video_and_json(
             json.dump(data, json_file, ensure_ascii=False, indent=4)
 
         video_path = os.path.join(session_folder, "current_work_video.mp4")
-        # ф-ция для создания файла с субтитрами
-        generate_subtitles(json_path)
+
+        global last_opened_video
+
+        # создаем новые субтитры, старые авторские удаляем, если они есть
+        if last_opened_video != video_path:
+            generate_subtitles(json_path)
+            if os.path.exists('user_subtitles.srt'):
+                os.remove('user_subtitles.srt')
+
         process_video(video_path,
                       json_path,
                       add_subtitles=add_subtitles,
@@ -158,6 +166,8 @@ async def load_video_and_json(
                       music_filename=music_filename,
                       background_filename=background_filename
                       )
+        last_opened_video = video_path
+
         return FileResponse(video_path, media_type="video/mp4")
 
     except Exception as e:
