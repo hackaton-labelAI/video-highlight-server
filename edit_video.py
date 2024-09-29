@@ -29,7 +29,8 @@ def convert_seconds_to_time(seconds):
 
 
 def generate_subtitles(json_filepath):
-    with open(json_filepath, 'r') as f:
+    print(json_filepath)
+    with open(json_filepath, 'r', encoding='utf-8') as f:
         data = json.load(f)
 
     data = data['whisper_response']
@@ -47,7 +48,7 @@ def generate_subtitles(json_filepath):
         file.writelines(lines)
 
     with open('subtitles.srt', 'r') as f:
-        data = json.load(f)
+        data = f.read()
         return str(data)
 
 
@@ -297,4 +298,6 @@ def process_video(input_filename, json_filepath,
 if __name__ == '__main__':
     # process_video(background_filename='background.mp4', music_volume_delta=-15, music_filename='music_lofi.mp3')
     # generate_subtitles('session_info_8f46a547-a786-46d5-9dc9-979dada0a7b0/current_work_video.json')
-    print(TextClip.list('color'))
+    # print(TextClip.list('color'))
+    with open('session_info_8f46a547-a786-46d5-9dc9-979dada0a7b0/current_work_video.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
