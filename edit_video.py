@@ -292,9 +292,12 @@ def process_video(input_filename, json_filepath,
         final_video = final
 
     # Удаление файлов
-    os.remove('output_video.avi')
-    os.remove('output_audio.mp3')
-    os.remove('subtitles.srt')
+    if os.path.exists('output_video.avi'):
+        os.remove('output_video.avi')
+    if os.path.exists('output_audio.mp3'):
+        os.remove('output_audio.mp3')
+    if os.path.exists('subtitles.srt'):
+        os.remove('subtitles.srt')
     if music_filename:
         os.remove(music_filename)
 
