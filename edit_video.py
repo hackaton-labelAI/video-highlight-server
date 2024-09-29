@@ -46,6 +46,12 @@ def generate_subtitles(json_filepath):
     with open('subtitles.srt', 'w') as file:
         file.writelines(lines)
 
+    with open('subtitles.srt', 'r') as f:
+        data = json.load(f)
+        return str(data)
+
+
+
 
 def srt_to_utf8(filename='subtitles.srt'):
     try:

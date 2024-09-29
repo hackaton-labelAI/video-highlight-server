@@ -13,6 +13,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from endpoints.upload_file import router as UploadFile
+from endpoints.get_subtitles import router as Subtitles
 from endpoints.upload_file import video_sessions
 from endpoints.work_with_vidio import router as WorkWithFile
 from services.find_best import find_interesting_moment, sort_results, find_two_moments, ResultMoment
@@ -22,6 +23,7 @@ app = FastAPI(title='Video Highlighter API', docs_url='/docs')
 
 app.include_router(UploadFile)
 app.include_router(WorkWithFile)
+app.include_router(Subtitles)
 
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
